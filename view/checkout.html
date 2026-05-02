@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAGO SEGURO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    .checkout-container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .resumen-orden {
+      background-color: #f0bd5e;
+      border: 2px solid black;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-family: "Courier Prime", monospace;
+    }
+    .resumen-orden h2 {
+      font-family: "Anton", sans-serif;
+      margin-bottom: 10px;
+    }
+    .total {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 1.8rem;
+      margin-top: 10px;
+    }
+    .adyen-container {
+      border: 2px solid black;
+      border-radius: 5px;
+      padding: 15px;
+      background-color: white;
+    }
+    .nav-links {
+      margin-bottom: 20px;
+    }
+    .nav-links a {
+      font-family: "Anton", sans-serif;
+      color: black;
+      text-decoration: none;
+      margin-right: 20px;
+      border-bottom: 2px solid black;
+    }
+    #error-message {
+      font-family: "Courier Prime", monospace;
+      color: red;
+      margin-top: 10px;
+      display: none;
+    }
+    #payment-element {
+      margin-bottom: 20px;
+    }
+    .boton-pagar {
+      font-family: "Anton", sans-serif;
+      background-color: #dbb11a;
+      color: black;
+      padding: 10px 20px;
+      border: 1px solid black;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+    }
+    .boton-pagar:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-links">
+    <a href="/shop">← VOLVER A LA TIENDA</a>
+  </div>
+
+  <h1>PAGO SEGURO</h1>
+
+  <div class="checkout-container">
+    <div class="resumen-orden" id="resumen-orden"></div>
+    <div class="adyen-container">
+      <div id="payment-element"></div>
+      <button class="boton-pagar" id="boton-pagar">PAGAR AHORA</button>
+    </div>
+    <p id="error-message"></p>
+  </div>
+
+  <script>
+    const sessionData = JSON.parse(sessionStorage.getItem('stripeSession'));
+
+    if (!sessionData) {
+      window.location.href = '/shop';
+    }
+
+    const resumen = document.getElementById('resumen-orden');
+    resumen.innerHTML = `
+      <h2>RESUMEN DE TU PEDIDO</h2>
+      <p>Producto: <strong>${sessionData.producto}</strong></p>
+      <p>Cantidad: <strong>${sessionData.cantidad} x 100g</strong></p>
+      <p class="total">TOTAL: €${sessionData.total}</p>
+    `;
+
+    const stripe = Stripe('STRIPE_PUBLISHABLE_KEY_PLACEHOLDER');
+
+    const elements = stripe.elements({ clientSecret: sessionData.clientSecret });
+    const paymentElement = elements.create('payment');
+    paymentElement.mount('#payment-element');
+
+    const boton = document.getElementById('boton-pagar');
+
+    boton.addEventListener('click', async () => {
+      boton.disabled = true;
+      boton.textContent = 'PROCESANDO...';
+
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `http://localhost:3000/confirmacion?ordenId=${sessionData.ordenId}&resultado=ok`
+        }
+      });
+
+      if (error) {
+        const errorMsg = document.getElementById('error-message');
+        errorMsg.textContent = error.message;
+        errorMsg.style.display = 'block';
+        boton.disabled = false;
+        boton.textContent = 'PAGAR AHORA';
+      }
+    });
+  </script>
+</body>
+</html>

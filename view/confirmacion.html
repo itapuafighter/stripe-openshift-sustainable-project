@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CONFIRMACIÓN DE PEDIDO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .confirmacion-container {
+      max-width: 500px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .status-box {
+      border: 2px solid black;
+      border-radius: 5px;
+      padding: 30px;
+      margin: 20px 0;
+      font-family: "Courier Prime", monospace;
+    }
+    .status-ok {
+      background-color: #f0bd5e;
+    }
+    .status-fallido {
+      background-color: #ff6b6b;
+    }
+    .status-icon {
+      font-size: 4rem;
+      margin-bottom: 10px;
+    }
+    .status-box h2 {
+      font-family: "Anton", sans-serif;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .orden-id {
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 1.2rem;
+      margin-top: 15px;
+      border-top: 1px solid black;
+      padding-top: 10px;
+    }
+    .boton-volver {
+      font-family: "Anton", sans-serif;
+      background-color: #dbb11a;
+      color: black;
+      padding: 10px 20px;
+      border: 1px solid black;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .nav-links {
+      margin-bottom: 20px;
+    }
+    .nav-links a {
+      font-family: "Anton", sans-serif;
+      color: black;
+      text-decoration: none;
+      margin-right: 20px;
+      border-bottom: 2px solid black;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-links">
+    <a href="/shop">← VOLVER A LA TIENDA</a>
+  </div>
+
+  <h1>CONFIRMACIÓN DE PEDIDO</h1>
+
+  <div class="confirmacion-container">
+    <div id="status-box" class="status-box"></div>
+    <a href="/shop" class="boton-volver">SEGUIR COMPRANDO</a>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const resultado = params.get('resultado');
+    const ordenId = params.get('ordenId');
+
+    const box = document.getElementById('status-box');
+
+    if (resultado === 'ok') {
+      box.classList.add('status-ok');
+      box.innerHTML = `
+        <div class="status-icon">✅</div>
+        <h2>¡PAGO COMPLETADO!</h2>
+        <p>Tu pedido ha sido procesado correctamente.</p>
+        <p>Recibirás tus frutos secos en un plazo de 2-3 días hábiles.</p>
+        <p class="orden-id">Nº DE ORDEN: ${ordenId}</p>
+      `;
+    } else {
+      box.classList.add('status-fallido');
+      box.innerHTML = `
+        <div class="status-icon">❌</div>
+        <h2>PAGO NO COMPLETADO</h2>
+        <p>Ha habido un problema procesando tu pago.</p>
+        <p>Por favor inténtalo de nuevo o usa otro método de pago.</p>
+        <p class="orden-id">Nº DE ORDEN: ${ordenId}</p>
+      `;
+    }
+
+    sessionStorage.removeItem('adyenSession');
+  </script>
+</body>
+</html>
